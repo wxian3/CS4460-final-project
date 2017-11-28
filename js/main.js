@@ -57,9 +57,26 @@ function setupMap(countries) {
             projectPoints(d.Longitude, d.Latitude, d.Location );
         });
 
+        allData = dataset;
+        updateChart(1952);
     });
 
     // TODO: Filter data by years and update the map with year slider
+    //updateChart(1952);
+}
+
+function updateChart(year) {
+    var nodes = d3.nest()
+        .key(function(d){ return d.Event_Date}).entries(allData);
+
+    // TODO: need to find how to get year data from two different formats of time Data
+    // Our data have both MM/DD/YY format and YYYY-MM-DD format of time data.
+    var timeData = nodes.filter(function(d) {return d.key == year});
+
+    // TODO: How to enter/update/merge/remove this below function
+    // timeData.forEach(function(d){
+    //     projectPoints(d.Longitude, d.Latitude, d.Location );
+    // });
 }
 
 function click() {
@@ -79,18 +96,7 @@ function projectPoints(lat,lon,loc) {
         .attr("class","point")
         .attr("r", 3);
     // TODO: replace text by hover triggered tooltip window
-/*
-    var tooltip = d3.select("body").append("text")
-                    .append("div")
-                    .style("opacity", 0)
-                    .text(loc)
-                    .attr("x", x + 5)
-                    .attr("y", y + 5);
-                    //.attr("class","text");
-    geo_point.on("mouseover", function() { console.log(loc);
-      return tooltip.style("opacity", 1);})
-    geo_point.on("mouseout", function() { return tooltip.style("opacity", 0);})
-*/
+
     var div;
     geo_point.on("mouseover", function() {
         div = d3.select(this).append("text")
@@ -101,8 +107,6 @@ function projectPoints(lat,lon,loc) {
         div.style("visibility", "visible"); })
       .on("mouseout", function() {
         div.style("visibility", "hidden"); });
-          //.on("mouseout", );
-
 
     /*
     geo_point.on("mouseover", function() {
