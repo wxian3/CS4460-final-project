@@ -12,13 +12,13 @@ $("#yearSlider").on('change', function(event){
 var width = document.getElementById('main').offsetWidth;
 var height = width / 2;
 
-var graticule = d3.geo.graticule();
+var graticule = d3.geoGraticule();
 
-var projection = d3.geo.mercator()
+var projection = d3.geoMercator()
     .translate([(width/2), (height/2)])
     .scale( width / 2 / Math.PI);
 
-var path = d3.geo.path().projection(projection);
+var path = d3.geoPath().projection(projection);
 
 var svg = d3.select("#main").append("svg")
       .attr("width", width)
@@ -41,7 +41,7 @@ function setupMap(countries) {
         .attr("d", path);
 
     var country = g.selectAll(".country").data(countries);
-    
+
     // Draw the world map
     country.enter().insert("path")
         .attr("class", "country")
@@ -79,9 +79,43 @@ function projectPoints(lat,lon,loc) {
         .attr("class","point")
         .attr("r", 3);
     // TODO: replace text by hover triggered tooltip window
-    geo_point.append("text")
-        .attr("x", x + 5)
-        .attr("y", y + 5)
-        .attr("class","text")
-        .text(loc);
+/*
+    var tooltip = d3.select("body").append("text")
+                    .append("div")
+                    .style("opacity", 0)
+                    .text(loc)
+                    .attr("x", x + 5)
+                    .attr("y", y + 5);
+                    //.attr("class","text");
+    geo_point.on("mouseover", function() { console.log(loc);
+      return tooltip.style("opacity", 1);})
+    geo_point.on("mouseout", function() { return tooltip.style("opacity", 0);})
+*/
+    var div;
+    geo_point.on("mouseover", function() {
+        div = d3.select(this).append("text")
+          .text(loc)
+          .attr("x", x + 5)
+          .attr("y", y + 5)
+          .attr("class","text");
+        div.style("visibility", "visible"); })
+      .on("mouseout", function() {
+        div.style("visibility", "hidden"); });
+          //.on("mouseout", );
+
+
+    /*
+    geo_point.on("mouseover", function() {
+        //console.log(this);
+        d3.select(this).append("text")
+          .text(loc)
+    //.append("text")
+          .attr("x", x + 5)
+          .attr("y", y + 5)
+          .attr("class","text")
+          .style("visibility", visible); });
+          //.on("mouseout", );
+        //.text(loc);
+    */
+
 }
