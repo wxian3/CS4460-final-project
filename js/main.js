@@ -71,6 +71,11 @@ function updateChart(year) {
 
     // TODO: need to find how to get year data from two different formats of time Data
     // Our data have both MM/DD/YY format and YYYY-MM-DD format of time data.
+    // Solution : I came to Office Hour and asked TA,
+    //  She said we can just edit csv data for those event date into one format
+    // or other solution might be get all data into string and parse them separately.
+    // maybe just edit csv file should be easier i think?
+    
     var timeData = nodes.filter(function(d) {return d.key == year});
 
     // TODO: How to enter/update/merge/remove this below function
