@@ -8,7 +8,7 @@ $("#yearSlider").on('change', function(event){
     // Update the chart on the new value
     updateChart(event.value.newValue);
 });
-
+var nodes;
 var width = document.getElementById('main').offsetWidth;
 var height = width / 2;
 
@@ -58,6 +58,12 @@ function setupMap(countries) {
         // });
 
         allData = dataset;
+        nodes = d3.nest()
+            .key(function(d){ 
+                return d.Event_Date
+            })
+            .entries(allData);
+
         updateChart(1995);
     });
 
@@ -66,16 +72,13 @@ function setupMap(countries) {
 }
 
 function updateChart(year) {
-    var nodes = d3.nest()
-        .key(function(d){ return d.Event_Date}).entries(allData);
-
-    var timeData = nodes.filter(function(d) { return d.key.includes(year); });
+    var filteredValues = nodes.filter(function(d) { return d.key.includes(year); });
     //console.log(timeData);
 
-    timeData.forEach(function(d){
-      console.log(d.values[0]);
-        projectPoints(d.values[0].Longitude, d.values[0].Latitude, d.values[0].Location );
-    });
+    // timeData.forEach(function(d){
+    //   console.log(d.values[0]);
+    //     projectPoints(d.values[0].Longitude, d.values[0].Latitude, d.values[0].Location );
+    // });
 
 
     // TODO: How to enter/update/merge/remove this below function
@@ -83,6 +86,48 @@ function updateChart(year) {
     //     projectPoints(d.Longitude, d.Latitude, d.Location );
     // });
 
+    //var geo_point = g.append("g").attr("class", "geo_point");
+    var geo_point = g.selectAll('.geo_point')
+        .data(filteredValues, function(d) {
+            return d;
+        });
+    //var x = projection([lat,lon])[0];
+    //var y = projection([lat,lon])[1];
+    var radius = 3
+    
+    var geo_enter = geo_point.enter()
+        .append('g')
+        .attr('class', 'geo_point')
+    
+    geo_point.merge(geo_enter)
+
+    geo_enter.append("svg:circle")
+        .attr("cx", function(d) {
+            if (d.values[0].Latitude.length != 0) {
+                return projection([d.values[0].Latitude,d.values[0].Longitude])[0]
+            }
+        })
+        .attr("cy", function(d) {
+            if (d.values[0].Latitude.length != 0) {
+                return projection([d.values[0].Latitude,d.values[0].Longitude])[1]
+            }
+        })
+        .attr("class","point")
+        .attr("r", radius);
+    // TODO: replace text by hover triggered tooltip window
+
+    var div;
+    geo_point.on("mouseover", function() {
+        div = d3.select(this).append("text")
+          .text(loc)
+          .attr("x", x + 5)
+          .attr("y", y + 5)
+          .attr("class","text");
+        div.style("visibility", "visible"); })
+      .on("mouseout", function() {
+        div.style("visibility", "hidden"); });
+
+    geo_point.exit().remove()
 
 }
 
