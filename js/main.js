@@ -53,9 +53,9 @@ function setupMap(countries) {
     // Project location of data points on the map
     d3.csv("data/aircraft_incidents_edit.csv", function(err, dataset) {
 
-        dataset.forEach(function(d){
-            projectPoints(d.Longitude, d.Latitude, d.Location );
-        });
+        // dataset.forEach(function(d){
+        //     projectPoints(d.Longitude, d.Latitude, d.Location );
+        // });
 
         allData = dataset;
         updateChart(1995);
@@ -70,17 +70,20 @@ function updateChart(year) {
         .key(function(d){ return d.Event_Date}).entries(allData);
 
     var timeData = nodes.filter(function(d) { return d.key.includes(year); });
-    console.log(timeData);
+    //console.log(timeData);
 
-    // dataset.forEach(function(d){
-    //     projectPoints(d.Longitude, d.Latitude, d.Location );
-    // });
+    timeData.forEach(function(d){
+      console.log(d.values[0]);
+        projectPoints(d.values[0].Longitude, d.values[0].Latitude, d.values[0].Location );
+    });
 
 
     // TODO: How to enter/update/merge/remove this below function
     // timeData.forEach(function(d){
     //     projectPoints(d.Longitude, d.Latitude, d.Location );
     // });
+
+
 }
 
 function click() {
@@ -90,40 +93,45 @@ function click() {
 
 function projectPoints(lat,lon,loc) {
 
-    var geo_point = g.append("g").attr("class", "geo_point");
-    var x = projection([lat,lon])[0];
-    var y = projection([lat,lon])[1];
+    if (typeof(lat) !== 'undefined') {
+      console.log(lat)
 
-    geo_point.append("svg:circle")
-        .attr("cx", x)
-        .attr("cy", y)
-        .attr("class","point")
-        .attr("r", 3);
-    // TODO: replace text by hover triggered tooltip window
+      var geo_point = g.append("g").attr("class", "geo_point");
+      var x = projection([lat,lon])[0];
+      var y = projection([lat,lon])[1];
+      var radius = 3
 
-    var div;
-    geo_point.on("mouseover", function() {
-        div = d3.select(this).append("text")
-          .text(loc)
-          .attr("x", x + 5)
-          .attr("y", y + 5)
-          .attr("class","text");
-        div.style("visibility", "visible"); })
-      .on("mouseout", function() {
-        div.style("visibility", "hidden"); });
+      geo_point.append("svg:circle")
+          .attr("cx", x)
+          .attr("cy", y)
+          .attr("class","point")
+          .attr("r", radius);
+      // TODO: replace text by hover triggered tooltip window
 
-    /*
-    geo_point.on("mouseover", function() {
-        //console.log(this);
-        d3.select(this).append("text")
-          .text(loc)
-    //.append("text")
-          .attr("x", x + 5)
-          .attr("y", y + 5)
-          .attr("class","text")
-          .style("visibility", visible); });
-          //.on("mouseout", );
-        //.text(loc);
-    */
+      var div;
+      geo_point.on("mouseover", function() {
+          div = d3.select(this).append("text")
+            .text(loc)
+            .attr("x", x + 5)
+            .attr("y", y + 5)
+            .attr("class","text");
+          div.style("visibility", "visible"); })
+        .on("mouseout", function() {
+          div.style("visibility", "hidden"); });
+
+      /*
+      geo_point.on("mouseover", function() {
+          //console.log(this);
+          d3.select(this).append("text")
+            .text(loc)
+      //.append("text")
+            .attr("x", x + 5)
+            .attr("y", y + 5)
+            .attr("class","text")
+            .style("visibility", visible); });
+            //.on("mouseout", );
+          //.text(loc);
+      */
+  }
 
 }
