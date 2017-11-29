@@ -51,14 +51,14 @@ function setupMap(countries) {
         .style("fill", function(d, i) { return d.properties.color; });
 
     // Project location of data points on the map
-    d3.csv("data/aircraft_incidents.csv", function(err, dataset) {
+    d3.csv("data/aircraft_incidents_edit.csv", function(err, dataset) {
 
         dataset.forEach(function(d){
             projectPoints(d.Longitude, d.Latitude, d.Location );
         });
 
         allData = dataset;
-        updateChart(1952);
+        updateChart(1995);
     });
 
     // TODO: Filter data by years and update the map with year slider
@@ -69,14 +69,13 @@ function updateChart(year) {
     var nodes = d3.nest()
         .key(function(d){ return d.Event_Date}).entries(allData);
 
-    // TODO: need to find how to get year data from two different formats of time Data
-    // Our data have both MM/DD/YY format and YYYY-MM-DD format of time data.
-    // Solution : I came to Office Hour and asked TA,
-    //  She said we can just edit csv data for those event date into one format
-    // or other solution might be get all data into string and parse them separately.
-    // maybe just edit csv file should be easier i think?
-    
-    var timeData = nodes.filter(function(d) {return d.key == year});
+    var timeData = nodes.filter(function(d) { return d.key.includes(year); });
+    console.log(timeData);
+
+    // dataset.forEach(function(d){
+    //     projectPoints(d.Longitude, d.Latitude, d.Location );
+    // });
+
 
     // TODO: How to enter/update/merge/remove this below function
     // timeData.forEach(function(d){
