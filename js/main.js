@@ -9,6 +9,7 @@ $("#yearSlider").on('change', function(event){
     updateChart(event.value.newValue);
 });
 var nodes;
+var airCarrierNodes;
 var width = document.getElementById('main').offsetWidth;
 var height = width / 2;
 
@@ -81,9 +82,73 @@ function setupMap(countries) {
 }
 
 function updateChart(year) {
-    var filteredValues = nodes.filter(function(d) { 
-        return d.key.includes(year); 
+    var filteredValues = nodes.filter(function(d) {
+        return d.key.includes(year);
     });
+
+    //
+    // Making pie chart
+    //
+    airCarrierNodes = d3.nest()
+        .key(function(d) {
+            return d.values[0].Air_Carrier;
+        })
+        .sortKeys(d3.ascending)
+        .rollup(function(leaves) {
+            return leaves.length;
+        })
+        .entries(filteredValues);
+        console.log(airCarrierNodes);
+
+    var pieWidth = 200,
+        pieHeight = 200,
+        pieRadius = Math.min(pieWidth, pieHeight) / 2;
+
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+    var arc = d3.arc()
+        .outerRadius(pieRadius - 10)
+        .innerRadius(0);
+
+    var labelArc = d3.arc()
+        .outerRadius(pieRadius - 40)
+        .innerRadius(pieRadius - 40);
+
+    var pie = d3.pie()
+        .sort(null)
+        .value(function(d) {
+          // console.log(d.value);
+          return d.value;});
+
+    var pie_chart = g.selectAll('.arc')
+        .data(pie(airCarrierNodes));
+
+    var pie_enter = pie_chart.enter()
+        .append('g')
+        .attr('class', 'arc')
+        .attr('transform', 'translate(' + 100 + ',' + 400 + ')');
+
+    pie_chart.merge(pie_enter);
+
+    pie_enter.append('path')
+        .attr('d', arc)
+        .style('fill', function(d) { return color(d.data.key);})
+        .append('title')
+        .text(function(d){
+          if (d.data.key == '') {
+              return 'Unknown';
+          } else {
+              return d.data.key;
+          }
+        });
+
+    pie_enter.append('text')
+        .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
+        .attr("dy", ".35em")
+        .style("font-size", "8px")
+        .text(function(d) { return d.data.value; });
+    //
+    //
     var geo_point = g.selectAll('.geo_point')
         .data(filteredValues, function(d) {
             return d;
@@ -106,7 +171,7 @@ function updateChart(year) {
             } else {
                 // load location from extra dataset if not found in original dataset
                 var locName = d.values[0].Location.split(',');
-                
+
                 var locFilteredValue = locNodes.filter(function(d) {
                     if (d.key.toLowerCase() == locName[0].toLowerCase()) {
                         return d.key;
@@ -116,7 +181,7 @@ function updateChart(year) {
                     var lon2 = locFilteredValue[0].values[0].Longitude;
                     var lat2 = locFilteredValue[0].values[0].Latitude;
                     x = projection([lon2, lat2])[0];
-                } 
+                }
             }
             return x;
         })
@@ -134,7 +199,7 @@ function updateChart(year) {
                     var lon2 = locFilteredValue[0].values[0].Longitude;
                     var lat2 = locFilteredValue[0].values[0].Latitude;
                     y = projection([lon2, lat2])[1];
-                } 
+                }
             }
             return y;
         })
@@ -159,7 +224,7 @@ function updateChart(year) {
                 return "green"
             } else if (d.values[0].Injury_Severity == "Incident") {
                 return "yellow"
-            } else if (d.values[0].Injury_Severity.includes("Fatal")) {
+            } else if (d.values[0].Injury_Severity.includes("Fatal(")) {
                 return "red"
             } else {
                 return "white"
@@ -185,10 +250,11 @@ function updateChart(year) {
                 .duration(500)
                 .style("opacity", 0);
         });
-        
+
     // TODO: replace text by hover triggered tooltip window
 
-    geo_point.exit().remove()
+    pie_chart.exit().remove();
+    geo_point.exit().remove();
 
 }
 
