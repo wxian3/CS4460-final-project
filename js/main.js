@@ -156,7 +156,6 @@ function updateChart(year) {
 
     var x = 0;
     var y = 0;
-    var radius = 5;
 
     var geo_enter = geo_point.enter()
         .append('g')
@@ -183,6 +182,9 @@ function updateChart(year) {
                     x = projection([lon2, lat2])[0];
                 }
             }
+            if (x == 0) {
+                this.setAttribute('opacity', 0)
+            }
             return x;
         })
         .attr("cy", function(d) {
@@ -200,6 +202,9 @@ function updateChart(year) {
                     var lat2 = locFilteredValue[0].values[0].Latitude;
                     y = projection([lon2, lat2])[1];
                 }
+            }
+            if (y == 0) {
+                this.setAttribute('opacity', 0)
             }
             return y;
         })
@@ -260,33 +265,4 @@ function updateChart(year) {
 
 function click() {
     var latlon = projection.invert(d3.mouse(this));
-}
-
-function projectPoints(lat,lon,loc) {
-
-    if (typeof(lat) !== 'undefined') {
-
-      var geo_point = g.append("g").attr("class", "geo_point");
-      var x = projection([lon,lat])[0];
-      var y = projection([lon,lat])[1];
-      var radius = 3
-
-      geo_point.append("svg:circle")
-          .attr("cx", x)
-          .attr("cy", y)
-          .attr("class","point")
-          .attr("r", radius);
-
-      var div;
-      geo_point.on("mouseover", function() {
-          div = d3.select(this).append("text")
-            .text(loc)
-            .attr("x", x + 5)
-            .attr("y", y + 5)
-            .attr("class","text");
-          div.style("visibility", "visible"); })
-        .on("mouseout", function() {
-          div.style("visibility", "hidden"); });
-  }
-
 }
