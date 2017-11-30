@@ -38,12 +38,12 @@ d3.json("data/world-topo-min.json", function(error, world) {
 
 //additional dataset for location lat,long
 d3.csv("data/World_Cities_Location.csv", function(err, dataset2) {
+
     locData = dataset2;
     locNodes = d3.nest().key(function(d){
         return d.City;
     })
     .entries(locData);
-    // console.log(locNodes);
 });
 
 function setupMap(countries) {
@@ -67,35 +67,29 @@ function setupMap(countries) {
     // Project location of data points on the map
     d3.csv("data/aircraft_incidents_edit.csv", function(err, dataset) {
 
-        // dataset.forEach(function(d){
-        //     projectPoints(d.Longitude, d.Latitude, d.Location );
-        // });
-
         allData = dataset;
         nodes = d3.nest()
             .key(function(d){
                 return d.Event_Date;
             })
             .entries(allData);
-
+        // Filter data by years and update the map with year slider
         updateChart(1995);
     });
-
-    // TODO: Filter data by years and update the map with year slider
-    //updateChart(1952);
 }
 
 function updateChart(year) {
-    var filteredValues = nodes.filter(function(d) { return d.key.includes(year); });
+    var filteredValues = nodes.filter(function(d) { 
+        return d.key.includes(year); 
+    });
     var geo_point = g.selectAll('.geo_point')
         .data(filteredValues, function(d) {
             return d;
         });
-    //var x = projection([lat,lon])[0];
-    //var y = projection([lat,lon])[1];
-    var radius = 3;
+
     var x = 0;
     var y = 0;
+    var radius = 5;
 
     var geo_enter = geo_point.enter()
         .append('g')
@@ -106,9 +100,9 @@ function updateChart(year) {
     geo_enter.append("svg:circle")
         .attr("cx", function(d) {
             if (d.values[0].Latitude.length != 0) {
-            	x = projection([d.values[0].Longitude,d.values[0].Latitude])[0];
-                return x;
+                x = projection([d.values[0].Longitude,d.values[0].Latitude])[0];
             } else {
+                // load location from extra dataset if not found in original dataset
                 var locName = d.values[0].Location.split(',');
                 
                 var locFilteredValue = locNodes.filter(function(d) {
@@ -120,15 +114,13 @@ function updateChart(year) {
                     var lon2 = locFilteredValue[0].values[0].Longitude;
                     var lat2 = locFilteredValue[0].values[0].Latitude;
                     x = projection([lon2, lat2])[0];
-                    //console.log(x);
-                    return x;
-                }
+                } 
             }
+            return x;
         })
         .attr("cy", function(d) {
             if (d.values[0].Latitude.length != 0) {
-            	y = projection([d.values[0].Longitude, d.values[0].Latitude])[1];
-                return y;
+                y = projection([d.values[0].Longitude, d.values[0].Latitude])[1];
             } else {
                 var locName = d.values[0].Location.split(',');
                 var locFilteredValue = locNodes.filter(function(d) {
@@ -140,29 +132,34 @@ function updateChart(year) {
                     var lon2 = locFilteredValue[0].values[0].Longitude;
                     var lat2 = locFilteredValue[0].values[0].Latitude;
                     y = projection([lon2, lat2])[1];
-                    //console.log(y);
-                    return y;
-                }
+                } 
             }
+            return y;
         })
         .attr("class","point")
-        .attr("r", radius);
+        .attr("r", radius)
+        .attr("text", (function(d) {
+            return d.values[0].Location;
+        }))
+        .on("mouseover", function() {
+            // Display text information when mouse over the circle
+            text = geo_enter.append("text")
+                .attr("class", "text")
+                .attr("x", parseInt(this.getAttribute('cx')) + 10)
+                .attr("y", parseInt(this.getAttribute('cy')) - 5)
+                .text(this.getAttribute('text'));
+            text.transition()
+                .duration(200)
+                .style("opacity", 0.9);
+        })
+        .on("mouseout", function() {
+            text.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
+        
     // TODO: replace text by hover triggered tooltip window
 
-    var div;
-    if (x != 0) {
-      console.log(x);
-	    geo_point.on("mouseover", function() {
-          console.log("something");
-	        div = d3.select(this).append("text")
-	          .text(loc)
-	          .attr("x", x + 5)
-	          .attr("y", y + 5)
-	          .attr("class","text");
-	        div.style("visibility", "visible"); })
-	      .on("mouseout", function() {
-	        div.style("visibility", "hidden"); });
-	  }
     geo_point.exit().remove()
 
 }
