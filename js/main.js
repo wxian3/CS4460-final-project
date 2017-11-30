@@ -85,6 +85,50 @@ function updateChart(year) {
     var filteredValues = nodes.filter(function(d) {
         return d.key.includes(year);
     });
+    //
+    // making bar chart
+    //
+    var modelNodes = d3.nest()
+        .key(function(d) {return d.values[0].Make;})
+        .key(function(d) {return d.values[0].Model;})
+        .rollup(function(leaves) {
+            return leaves.length;
+        })
+        .entries(filteredValues);
+    console.log(modelNodes);
+    var xScale = d3.scaleBand().rangeRound([0, 100]).padding(0.1);
+    var yScale = d3.scaleLinear().range([100, 0]);
+    var xAxis = g.append('g')
+        .attr('transform', 'translate(' + 100 + ',' + 200 + ')')
+        .attr('class', 'x axis')
+        .call(d3.axisBottom(xScale));
+    var yAxis = g.append('g')
+        .attr('class', 'y axis')
+        .call(d3.axisLeft(yScale).ticks(10));
+
+    var bar_chart = g.selectAll('.rect')
+        .data(modelNodes);
+
+    var bar_enter = bar_chart.enter()
+        .append('rect')
+        .attr('class', 'bar');
+
+    bar_chart.merge(bar_enter);
+
+    bar_enter.attr('x', function(d){
+            // console.log(d.values[0].key);
+            return xScale(d.values[0].key);
+        })
+        .attr('y', function(d){
+            // console.log(d.values[0].value);
+            return yScale(d.values[0].value);
+        })
+        .attr('width', xScale.bandwidth())
+        .attr('height', function(d){return 100 - yScale(d.values[0].value);});
+
+    ////
+    //bar_end
+
 
     //
     // Making pie chart
@@ -98,7 +142,7 @@ function updateChart(year) {
             return leaves.length;
         })
         .entries(filteredValues);
-        console.log(airCarrierNodes);
+        // console.log(airCarrierNodes);
 
     var pieWidth = 200,
         pieHeight = 200,
@@ -148,7 +192,8 @@ function updateChart(year) {
         .style("font-size", "8px")
         .text(function(d) { return d.data.value; });
     //
-    //
+    //pie_end
+
     var geo_point = g.selectAll('.geo_point')
         .data(filteredValues, function(d) {
             return d;
@@ -258,6 +303,7 @@ function updateChart(year) {
 
     // TODO: replace text by hover triggered tooltip window
 
+    bar_chart.exit().remove();
     pie_chart.exit().remove();
     geo_point.exit().remove();
 
