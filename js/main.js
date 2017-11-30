@@ -87,19 +87,6 @@ function setupMap(countries) {
 
 function updateChart(year) {
     var filteredValues = nodes.filter(function(d) { return d.key.includes(year); });
-    //console.log(timeData);
-
-    // timeData.forEach(function(d){
-    //   console.log(d.values[0]);
-    //     projectPoints(d.values[0].Longitude, d.values[0].Latitude, d.values[0].Location );
-    // });
-
-    // TODO: How to enter/update/merge/remove this below function
-    // timeData.forEach(function(d){
-    //     projectPoints(d.Longitude, d.Latitude, d.Location );
-    // });
-
-    //var geo_point = g.append("g").attr("class", "geo_point");
     var geo_point = g.selectAll('.geo_point')
         .data(filteredValues, function(d) {
             return d;
@@ -119,50 +106,41 @@ function updateChart(year) {
     geo_enter.append("svg:circle")
         .attr("cx", function(d) {
             if (d.values[0].Latitude.length != 0) {
-            	x = projection([d.values[0].Latitude,d.values[0].Longitude])[0];
+            	x = projection([d.values[0].Longitude,d.values[0].Latitude])[0];
                 return x;
             } else {
                 var locName = d.values[0].Location.split(',');
-                console.log(locName[0]);
-                // console.log(locNodes);
+                
                 var locFilteredValue = locNodes.filter(function(d) {
                     if (d.key.toLowerCase() == locName[0].toLowerCase()) {
                         return d.key;
                     };
                 });
-                // console.log(locFilteredValue);
                 if (typeof(locFilteredValue[0]) !== 'undefined') {
-                    // console.log(locFilteredValue[0].values[0].Latitude);
-                    var lat2 = locFilteredValue[0].values[0].Latitude;
                     var lon2 = locFilteredValue[0].values[0].Longitude;
-                    x = projection([lat2, lon2])[0];
-                    console.log(x);
+                    var lat2 = locFilteredValue[0].values[0].Latitude;
+                    x = projection([lon2, lat2])[0];
+                    //console.log(x);
                     return x;
                 }
             }
         })
         .attr("cy", function(d) {
-            // console.log(d.values[0].Latitude);
-            // console.log(d.values[0].Longitude);
             if (d.values[0].Latitude.length != 0) {
-            	y = projection([d.values[0].Latitude,d.values[0].Longitude])[1];
+            	y = projection([d.values[0].Longitude, d.values[0].Latitude])[1];
                 return y;
             } else {
                 var locName = d.values[0].Location.split(',');
-                // console.log(locName[0]);
-                // console.log(locNodes);
                 var locFilteredValue = locNodes.filter(function(d) {
                     if (d.key.toLowerCase() == locName[0].toLowerCase()) {
                         return d.key;
                     };
                 });
-                // console.log(locFilteredValue);
                 if (typeof(locFilteredValue[0]) !== 'undefined') {
-                    // console.log(locFilteredValue[0].values[0].Latitude);
-                    var lat2 = locFilteredValue[0].values[0].Latitude;
                     var lon2 = locFilteredValue[0].values[0].Longitude;
-                    y = projection([lat2, lon2])[1];
-                    console.log(y);
+                    var lat2 = locFilteredValue[0].values[0].Latitude;
+                    y = projection([lon2, lat2])[1];
+                    //console.log(y);
                     return y;
                 }
             }
@@ -191,17 +169,15 @@ function updateChart(year) {
 
 function click() {
     var latlon = projection.invert(d3.mouse(this));
-    // console.log(latlon);
 }
 
 function projectPoints(lat,lon,loc) {
 
     if (typeof(lat) !== 'undefined') {
-      // console.log(lat)
 
       var geo_point = g.append("g").attr("class", "geo_point");
-      var x = projection([lat,lon])[0];
-      var y = projection([lat,lon])[1];
+      var x = projection([lon,lat])[0];
+      var y = projection([lon,lat])[1];
       var radius = 3
 
       geo_point.append("svg:circle")
@@ -209,7 +185,6 @@ function projectPoints(lat,lon,loc) {
           .attr("cy", y)
           .attr("class","point")
           .attr("r", radius);
-      // TODO: replace text by hover triggered tooltip window
 
       var div;
       geo_point.on("mouseover", function() {
@@ -221,20 +196,6 @@ function projectPoints(lat,lon,loc) {
           div.style("visibility", "visible"); })
         .on("mouseout", function() {
           div.style("visibility", "hidden"); });
-
-      /*
-      geo_point.on("mouseover", function() {
-          //console.log(this);
-          d3.select(this).append("text")
-            .text(loc)
-      //.append("text")
-            .attr("x", x + 5)
-            .attr("y", y + 5)
-            .attr("class","text")
-            .style("visibility", visible); });
-            //.on("mouseout", );
-          //.text(loc);
-      */
   }
 
 }
