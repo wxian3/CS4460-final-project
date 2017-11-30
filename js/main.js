@@ -73,6 +73,8 @@ function setupMap(countries) {
                 return d.Event_Date;
             })
             .entries(allData);
+
+        // TODO: Add Legend for color: red: Fatal, yellow: Incident, green: Non-fatal
         // Filter data by years and update the map with year slider
         updateChart(1995);
     });
@@ -137,7 +139,33 @@ function updateChart(year) {
             return y;
         })
         .attr("class","point")
-        .attr("r", radius)
+        .attr("r", function(d) {
+            if (d.values[0].Injury_Severity == "Non-Fatal") {
+                return 3
+            } else if (d.values[0].Injury_Severity == "Incident") {
+                return 5
+            } else if (d.values[0].Injury_Severity.includes("Fatal")) {
+                severity = d.values[0].Injury_Severity
+                ind1 = severity.indexOf('(')
+                ind2 = severity.indexOf(')')
+                fatal_num = severity.substring(ind1 + 1, ind2)
+                return 5 + parseInt(fatal_num) / 5
+            } else {
+                return 3
+            }
+        })
+        .attr("fill", function(d) {
+            if (d.values[0].Injury_Severity == "Non-Fatal") {
+                return "green"
+            } else if (d.values[0].Injury_Severity == "Incident") {
+                return "yellow"
+            } else if (d.values[0].Injury_Severity.includes("Fatal")) {
+                return "red"
+            } else {
+                return "white"
+            }
+        })
+        .style('stroke', 'white')
         .attr("text", (function(d) {
             return d.values[0].Location;
         }))
