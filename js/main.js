@@ -9,7 +9,7 @@ $("#yearSlider").on('change', function(event){
     updateChart(event.value.newValue);
 });
 var nodes;
-var airCarrierNodes;
+// var airCarrierNodes;
 var width = document.getElementById('main').offsetWidth;
 var height = width / 2;
 
@@ -88,22 +88,23 @@ function updateChart(year) {
     //
     // making bar chart
     //
+    var tempVal = filteredValues;
     var modelNodes = d3.nest()
         .key(function(d) {return d.values[0].Make;})
         .key(function(d) {return d.values[0].Model;})
         .rollup(function(leaves) {
             return leaves.length;
         })
-        .entries(filteredValues);
+        .entries(tempVal);
     console.log(modelNodes);
     var xScale = d3.scaleBand().rangeRound([0, 100]).padding(0.8);
     var yScale = d3.scaleLinear().range([100, 0]);
     var xAxis = g.append('g')
-        .attr('transform', 'translate(' + 50 + ',' + 300 + ')')
+        .attr('transform', 'translate(' + 50 + ',' + 250 + ')')
         .attr('class', 'x axis')
         .call(d3.axisBottom(xScale));
     var yAxis = g.append('g')
-        .attr('transform', 'translate(' + 50 + ',' + 200 + ')')
+        .attr('transform', 'translate(' + 50 + ',' + 150 + ')')
         .attr('class', 'y axis')
         .call(d3.axisLeft(yScale).ticks(10));
 
@@ -116,8 +117,7 @@ function updateChart(year) {
 
     bar_chart.merge(bar_enter);
 
-    bar_enter.attr('transform', 'translate(' + 50 + ',' + 300 + ')')
-        .attr('x', function(d){
+    bar_enter.attr('x', function(d){
             console.log(d.values[0].key);
             return xScale(d.values[0].key);
         })
@@ -125,6 +125,7 @@ function updateChart(year) {
             console.log(d.values[0].value);
             return yScale(d.values[0].value);
         })
+        //.attr('transform', 'translate(' + 50 + ',' + 300 + ')')
         .attr('width', xScale.bandwidth())
         .attr('height', function(d){return 100 - yScale(d.values[0].value);});
 
@@ -135,7 +136,9 @@ function updateChart(year) {
     //
     // Making pie chart
     //
-    airCarrierNodes = d3.nest()
+    var tempVal2 = filteredValues;
+
+    var airCarrierNodes = d3.nest()
         .key(function(d) {
             return d.values[0].Air_Carrier;
         })
@@ -143,7 +146,7 @@ function updateChart(year) {
         .rollup(function(leaves) {
             return leaves.length;
         })
-        .entries(filteredValues);
+        .entries(tempVal2);
         // console.log(airCarrierNodes);
 
     var pieWidth = 200,
@@ -182,8 +185,9 @@ function updateChart(year) {
         .append('title')
         .text(function(d){
           if (d.data.key == '') {
-              return 'Unknown';
+              return 'Unknown aircarrier';
           } else {
+              // console.log(d);
               return d.data.key;
           }
         });
@@ -193,11 +197,41 @@ function updateChart(year) {
         .attr("dy", ".35em")
         .style("font-size", "8px")
         .text(function(d) { return d.data.value; });
+
+    //
+    // TODO: get total number of air carriers.
+    // Sorry. I'm dumb. keep failing to get total number for calculate pie percentage
+    var tempTotal = airCarrierNodes;
+    var total = d3.nest()
+        .rollup(function(value) {
+            // console.log(value);
+            d3.sum(value[0], function(v) {
+                // console.log(v.value);
+                return v.value;
+            });
+        })
+        .entries(tempTotal);
+    console.log(total);
+
+    pie_enter.append("text")
+      	.attr("transform", function(d) {
+            var _d = arc.centroid(d);
+            _d[0] *= 2.2;	//multiply by a constant factor
+            _d[1] *= 2.2;	//multiply by a constant factor
+            return "translate(" + _d + ")";
+        })
+        .attr("dy", ".50em")
+        .style("text-anchor", "middle")
+        .style("font-size", "10px")
+        .text(function(d) {
+            return (d.data.value / total) * 100  + '%';
+        });
     //
     //pie_end
+    var tempVal3 = filteredValues;
 
     var geo_point = g.selectAll('.geo_point')
-        .data(filteredValues, function(d) {
+        .data(tempVal3, function(d) {
             return d;
         });
 
