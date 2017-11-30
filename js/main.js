@@ -119,7 +119,7 @@ function updateChart(year) {
     geo_enter.append("svg:circle")
         .attr("cx", function(d) {
             if (d.values[0].Latitude.length != 0) {
-            	x = projection([d.values[0].Latitude,d.values[0].Longitude])[0];
+            	x = projection([d.values[0].Longitude, d.values[0].Latitude])[0];
                 return x;
             } else {
                 var locName = d.values[0].Location.split(',');
@@ -135,7 +135,7 @@ function updateChart(year) {
                     // console.log(locFilteredValue[0].values[0].Latitude);
                     var lat2 = locFilteredValue[0].values[0].Latitude;
                     var lon2 = locFilteredValue[0].values[0].Longitude;
-                    x = projection([lat2, lon2])[0];
+                    x = projection([lon2, lat2])[0];
                     console.log(x);
                     return x;
                 }
@@ -145,7 +145,7 @@ function updateChart(year) {
             // console.log(d.values[0].Latitude);
             // console.log(d.values[0].Longitude);
             if (d.values[0].Latitude.length != 0) {
-            	y = projection([d.values[0].Latitude,d.values[0].Longitude])[1];
+            	y = projection([d.values[0].Longitude, d.values[0].Latitude])[1];
                 return y;
             } else {
                 var locName = d.values[0].Location.split(',');
@@ -161,7 +161,7 @@ function updateChart(year) {
                     // console.log(locFilteredValue[0].values[0].Latitude);
                     var lat2 = locFilteredValue[0].values[0].Latitude;
                     var lon2 = locFilteredValue[0].values[0].Longitude;
-                    y = projection([lat2, lon2])[1];
+                    y = projection([lon2, lat2])[1];
                     console.log(y);
                     return y;
                 }
