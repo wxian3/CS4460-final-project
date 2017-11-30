@@ -96,13 +96,14 @@ function updateChart(year) {
         })
         .entries(filteredValues);
     console.log(modelNodes);
-    var xScale = d3.scaleBand().rangeRound([0, 100]).padding(0.1);
+    var xScale = d3.scaleBand().rangeRound([0, 100]).padding(0.8);
     var yScale = d3.scaleLinear().range([100, 0]);
     var xAxis = g.append('g')
-        .attr('transform', 'translate(' + 100 + ',' + 200 + ')')
+        .attr('transform', 'translate(' + 50 + ',' + 300 + ')')
         .attr('class', 'x axis')
         .call(d3.axisBottom(xScale));
     var yAxis = g.append('g')
+        .attr('transform', 'translate(' + 50 + ',' + 200 + ')')
         .attr('class', 'y axis')
         .call(d3.axisLeft(yScale).ticks(10));
 
@@ -115,12 +116,13 @@ function updateChart(year) {
 
     bar_chart.merge(bar_enter);
 
-    bar_enter.attr('x', function(d){
-            // console.log(d.values[0].key);
+    bar_enter.attr('transform', 'translate(' + 50 + ',' + 300 + ')')
+        .attr('x', function(d){
+            console.log(d.values[0].key);
             return xScale(d.values[0].key);
         })
         .attr('y', function(d){
-            // console.log(d.values[0].value);
+            console.log(d.values[0].value);
             return yScale(d.values[0].value);
         })
         .attr('width', xScale.bandwidth())
