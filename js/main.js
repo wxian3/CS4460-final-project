@@ -289,12 +289,12 @@ function pieChart() {
         .append('g')
         .attr('class', 'arc')
         .attr('transform', function(d) {
-            return 'translate(' + 100 + ',' + 380 + ')'
+            return 'translate(' + 100 + ',' + 500 + ')'
         });
 
     g.append('text')
         .attr('x', 100)
-        .attr('y', 270)
+        .attr('y', 400)
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('text-decoration', 'underline')
@@ -357,12 +357,12 @@ function pieChart() {
         .append('g')
         .attr('class', 'arc2')
         .attr('transform', function(d) {
-            return 'translate(' + 100 + ',' + 150 + ')'
+            return 'translate(' + 100 + ',' + 290 + ')'
         });
 
     g.append('text')
         .attr('x', 100)
-        .attr('y', 50)
+        .attr('y', 190)
         .attr('text-anchor', 'middle')
         .style('font-size', '14px')
         .style('text-decoration', 'underline')
