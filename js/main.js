@@ -138,16 +138,19 @@ function updateChart(year) {
     //
     var tempVal2 = filteredValues;
 
+    var tempTotal = 0;
     var airCarrierNodes = d3.nest()
         .key(function(d) {
             return d.values[0].Air_Carrier;
         })
         .sortKeys(d3.ascending)
         .rollup(function(leaves) {
+            tempTotal += leaves.length;
             return leaves.length;
         })
         .entries(tempVal2);
         // console.log(airCarrierNodes);
+        // console.log(tempTotal);
 
     var pieWidth = 200,
         pieHeight = 200,
@@ -184,10 +187,10 @@ function updateChart(year) {
         .style('fill', function(d) { return color(d.data.key);})
         .append('title')
         .text(function(d){
-          if (d.data.key == '') {
+          if (d.data.key == '' || typeof(d.data.key) == 'undefined' ) {
               return 'Unknown aircarrier';
           } else {
-              // console.log(d);
+              // console.log(d.data.key);
               return d.data.key;
           }
         });
@@ -198,20 +201,20 @@ function updateChart(year) {
         .style("font-size", "8px")
         .text(function(d) { return d.data.value; });
 
-    //
-    // TODO: get total number of air carriers.
-    // Sorry. I'm dumb. keep failing to get total number for calculate pie percentage
-    var tempTotal = airCarrierNodes;
-    var total = d3.nest()
-        .rollup(function(value) {
-            // console.log(value);
-            d3.sum(value[0], function(v) {
-                // console.log(v.value);
-                return v.value;
-            });
-        })
-        .entries(tempTotal);
-    console.log(total);
+    // //
+    // // TODO: get total number of air carriers.
+    // // Sorry. I'm dumb. keep failing to get total number for calculate pie percentage
+    // var tempTotal = airCarrierNodes;
+    // var total = d3.nest()
+    //     .rollup(function(value) {
+    //         // console.log(value);
+    //         d3.sum(value[0], function(v) {
+    //             // console.log(v.value);
+    //             return v.value;
+    //         });
+    //     })
+    //     .entries(tempTotal);
+    // console.log(total);
 
     pie_enter.append("text")
       	.attr("transform", function(d) {
@@ -224,7 +227,7 @@ function updateChart(year) {
         .style("text-anchor", "middle")
         .style("font-size", "10px")
         .text(function(d) {
-            return (d.data.value / total) * 100  + '%';
+            return d3.format(".0%")(d.data.value / tempTotal);
         });
     //
     //pie_end
