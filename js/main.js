@@ -97,12 +97,15 @@ function updateChart(year) {
         })
         .entries(tempVal);
     console.log(modelNodes);
-    var xScale = d3.scaleBand().rangeRound([0, 100]).padding(0.8);
+
+    var xScale = d3.scaleBand().range([0, 100]).padding(0.4);
     var yScale = d3.scaleLinear().range([100, 0]);
+
     var xAxis = g.append('g')
         .attr('transform', 'translate(' + 50 + ',' + 250 + ')')
         .attr('class', 'x axis')
         .call(d3.axisBottom(xScale));
+
     var yAxis = g.append('g')
         .attr('transform', 'translate(' + 50 + ',' + 150 + ')')
         .attr('class', 'y axis')
@@ -117,6 +120,14 @@ function updateChart(year) {
 
     bar_chart.merge(bar_enter);
 
+    //
+    // note: modelNodes has key of Makers and values includes
+    // arrays of model number and total number of incidents happened with that model.
+    // d.key : Maker
+    // d.values[0].key : Model number
+    // d.values[0].value : total number of incidents happened.
+    // But then I don't know why this bar chart doesn't draw correctly.
+    //
     bar_enter.attr('x', function(d){
             console.log(d.values[0].key);
             return xScale(d.values[0].key);
@@ -125,7 +136,7 @@ function updateChart(year) {
             console.log(d.values[0].value);
             return yScale(d.values[0].value);
         })
-        //.attr('transform', 'translate(' + 50 + ',' + 300 + ')')
+        .attr('transform', 'translate(' + 50 + ',' + 300 + ')')
         .attr('width', xScale.bandwidth())
         .attr('height', function(d){return 100 - yScale(d.values[0].value);});
 
@@ -200,21 +211,6 @@ function updateChart(year) {
         .attr("dy", ".35em")
         .style("font-size", "8px")
         .text(function(d) { return d.data.value; });
-
-    // //
-    // // TODO: get total number of air carriers.
-    // // Sorry. I'm dumb. keep failing to get total number for calculate pie percentage
-    // var tempTotal = airCarrierNodes;
-    // var total = d3.nest()
-    //     .rollup(function(value) {
-    //         // console.log(value);
-    //         d3.sum(value[0], function(v) {
-    //             // console.log(v.value);
-    //             return v.value;
-    //         });
-    //     })
-    //     .entries(tempTotal);
-    // console.log(total);
 
     pie_enter.append("text")
       	.attr("transform", function(d) {
