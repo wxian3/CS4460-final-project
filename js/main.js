@@ -77,8 +77,54 @@ function setupMap(countries) {
 
         // TODO: Add Legend for color: red: Fatal, yellow: Incident, green: Non-fatal
         // Filter data by years and update the map with year slider
+        var legendVal = ["Fatal", "Incident", "Non-Fatal"];
+        var color = d3.scaleOrdinal(["red", "yellow", "green"]);
+        var legWidth = 500;
+        var legHeight = 75;
+        var svgLegned = d3.select(".legend1").append("svg")
+            .attr("width", legWidth)
+            .attr("height", legHeight - 50);
+
+        var dataL = 0;
+        var offset = 80;
+
+        var legend1 = svgLegned.selectAll('.legends1')
+            .data(legendVal)
+            .enter().append('g')
+            .attr("class", "legends1")
+            .attr("transform", function (d, i) {
+             if (i === 0) {
+                dataL = d.length + offset
+                return "translate(0,0)"
+            } else {
+             var newdataL = dataL
+             dataL +=  d.length + offset
+             return "translate(" + (newdataL) + ",0)"
+            }
+        });
+
+        legend1.append('rect')
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", function (d, i) {
+            return color(i)
+        })
+
+        legend1.append('text')
+            .attr("x", 20)
+            .attr("y", 10)
+            .text(function (d, i) {
+                return d
+            })
+            .attr("class", "textselected")
+            .style("text-anchor", "start")
+            .style("font-size", 15);
+
+
         updateChart(1995);
-        pieChart()
+        pieChart();
     });
 }
 
@@ -246,15 +292,89 @@ function pieChart() {
             return 'translate(' + 100 + ',' + 380 + ')'
         });
 
+    g.append('text')
+        .attr('x', 100)
+        .attr('y', 270)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('text-decoration', 'underline')
+        .text("Flight Status during Incidents");
+
     //pie_chart.merge(pie_enter);
 
     pie_enter1.append('path')
         .attr('d', arc)
-        .style('fill', function(d) { 
+        .style('fill', function(d) {
             if (d.data.key == '') {
                 return 'grey';
             } else {
                 return color(d.data.key);
+            }
+        })
+        .append('title')
+        .text(function(d){
+        if (d.data.key == '') {
+            return 'Unknown';
+        } else {
+            // console.log(d.data.key)
+            return d.data.key;
+        }
+        });
+
+    pie_enter1.append('text')
+        .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
+        .attr("dy", ".35em")
+        .style("font-size", "8px")
+        .text(function(d) {
+            // console.log(d.data.key)
+            return d.data.key;
+        });
+    //pie_chart.exit().remove();
+
+    // Making pie chart2 for weather data
+    var pieNotes2 = d3.nest()
+        .key(function(d) {
+            return d.Weather_Condition;
+        })
+        .sortKeys(d3.ascending)
+        .rollup(function(leaves) {
+            return leaves.length;
+        })
+        .entries(allData);
+    console.log(pieNotes2);
+
+    var color2 = d3.scaleOrdinal(["#1f77B4", "#FF7F0E", "#2CA02C"]);
+
+    var pie2 = d3.pie()
+        .sort(null)
+        .value(function(d) {
+            return d.value;});
+
+    var pie_chart2 = g.selectAll('.arc2')
+        .data(pie2(pieNotes2));
+
+    var pie_enter2 = pie_chart2.enter()
+        .append('g')
+        .attr('class', 'arc2')
+        .attr('transform', function(d) {
+            return 'translate(' + 100 + ',' + 150 + ')'
+        });
+
+    g.append('text')
+        .attr('x', 100)
+        .attr('y', 50)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '14px')
+        .style('text-decoration', 'underline')
+        .text("Weather Status during Incidents");
+
+    pie_enter2.append('path')
+        .attr('d', arc)
+        .style('fill', function(d) {
+            if (d.data.key == '') {
+                return 'grey';
+            } else {
+                return color2(d.data.key);
             }
         })
         .append('title')
@@ -267,16 +387,16 @@ function pieChart() {
         }
         });
 
-    pie_enter1.append('text')
+    pie_enter2.append('text')
         .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
         .attr("dy", ".35em")
         .style("font-size", "8px")
-        .text(function(d) { 
+        .text(function(d) {
             console.log(d.data.key)
-            return d.data.key; 
+            return d.data.key;
         });
-    //pie_chart.exit().remove();
 }
+
 // //
 //     // making bar chart
 //     //
