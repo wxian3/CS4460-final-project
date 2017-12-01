@@ -9,10 +9,10 @@ $("#yearSlider").on('change', function(event){
     updateChart(event.value.newValue);
 });
 var nodes;
-// var airCarrierNodes;
+var pieNotes;
 var width = document.getElementById('main').offsetWidth;
 var height = width / 2;
-
+var allData;
 var locData;
 var locNodes;
 
@@ -78,6 +78,7 @@ function setupMap(countries) {
         // TODO: Add Legend for color: red: Fatal, yellow: Incident, green: Non-fatal
         // Filter data by years and update the map with year slider
         updateChart(1995);
+        pieChart()
     });
 }
 
@@ -85,152 +86,9 @@ function updateChart(year) {
     var filteredValues = nodes.filter(function(d) {
         return d.key.includes(year);
     });
-    //
-    // making bar chart
-    //
-    var tempVal = filteredValues;
-    var modelNodes = d3.nest()
-        .key(function(d) {return d.values[0].Make;})
-        .key(function(d) {return d.values[0].Model;})
-        .rollup(function(leaves) {
-            return leaves.length;
-        })
-        .entries(tempVal);
-    console.log(modelNodes);
-
-    var xScale = d3.scaleBand().range([0, 100]).padding(0.4);
-    var yScale = d3.scaleLinear().range([100, 0]);
-
-    var xAxis = g.append('g')
-        .attr('transform', 'translate(' + 50 + ',' + 250 + ')')
-        .attr('class', 'x axis')
-        .call(d3.axisBottom(xScale));
-
-    var yAxis = g.append('g')
-        .attr('transform', 'translate(' + 50 + ',' + 150 + ')')
-        .attr('class', 'y axis')
-        .call(d3.axisLeft(yScale).ticks(10));
-
-    var bar_chart = g.selectAll('.rect')
-        .data(modelNodes);
-
-    var bar_enter = bar_chart.enter()
-        .append('rect')
-        .attr('class', 'bar');
-
-    bar_chart.merge(bar_enter);
-
-    //
-    // note: modelNodes has key of Makers and values includes
-    // arrays of model number and total number of incidents happened with that model.
-    // d.key : Maker
-    // d.values[0].key : Model number
-    // d.values[0].value : total number of incidents happened.
-    // But then I don't know why this bar chart doesn't draw correctly.
-    //
-    bar_enter.attr('x', function(d){
-            console.log(d.values[0].key);
-            return xScale(d.values[0].key);
-        })
-        .attr('y', function(d){
-            console.log(d.values[0].value);
-            return yScale(d.values[0].value);
-        })
-        .attr('transform', 'translate(' + 50 + ',' + 300 + ')')
-        .attr('width', xScale.bandwidth())
-        .attr('height', function(d){return 100 - yScale(d.values[0].value);});
-
-    ////
-    //bar_end
-
-
-    //
-    // Making pie chart
-    //
-    var tempVal2 = filteredValues;
-
-    var tempTotal = 0;
-    var airCarrierNodes = d3.nest()
-        .key(function(d) {
-            return d.values[0].Air_Carrier;
-        })
-        .sortKeys(d3.ascending)
-        .rollup(function(leaves) {
-            tempTotal += leaves.length;
-            return leaves.length;
-        })
-        .entries(tempVal2);
-        // console.log(airCarrierNodes);
-        // console.log(tempTotal);
-
-    var pieWidth = 200,
-        pieHeight = 200,
-        pieRadius = Math.min(pieWidth, pieHeight) / 2;
-
-    var color = d3.scaleOrdinal(d3.schemeCategory20);
-
-    var arc = d3.arc()
-        .outerRadius(pieRadius - 10)
-        .innerRadius(0);
-
-    var labelArc = d3.arc()
-        .outerRadius(pieRadius - 40)
-        .innerRadius(pieRadius - 40);
-
-    var pie = d3.pie()
-        .sort(null)
-        .value(function(d) {
-          // console.log(d.value);
-          return d.value;});
-
-    var pie_chart = g.selectAll('.arc')
-        .data(pie(airCarrierNodes));
-
-    var pie_enter = pie_chart.enter()
-        .append('g')
-        .attr('class', 'arc')
-        .attr('transform', 'translate(' + 100 + ',' + 400 + ')');
-
-    pie_chart.merge(pie_enter);
-
-    pie_enter.append('path')
-        .attr('d', arc)
-        .style('fill', function(d) { return color(d.data.key);})
-        .append('title')
-        .text(function(d){
-          if (d.data.key == '' || typeof(d.data.key) == 'undefined' ) {
-              return 'Unknown aircarrier';
-          } else {
-              // console.log(d.data.key);
-              return d.data.key;
-          }
-        });
-
-    pie_enter.append('text')
-        .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
-        .attr("dy", ".35em")
-        .style("font-size", "8px")
-        .text(function(d) { return d.data.value; });
-
-    pie_enter.append("text")
-      	.attr("transform", function(d) {
-            var _d = arc.centroid(d);
-            _d[0] *= 2.2;	//multiply by a constant factor
-            _d[1] *= 2.2;	//multiply by a constant factor
-            return "translate(" + _d + ")";
-        })
-        .attr("dy", ".50em")
-        .style("text-anchor", "middle")
-        .style("font-size", "10px")
-        .text(function(d) {
-            return d3.format(".0%")(d.data.value / tempTotal);
-        });
-    //
-    //pie_end
-    var tempVal3 = filteredValues;
 
     var geo_point = g.selectAll('.geo_point')
-        .data(tempVal3, function(d) {
+        .data(filteredValues, function(d) {
             return d;
         });
 
@@ -338,8 +196,7 @@ function updateChart(year) {
 
     // TODO: replace text by hover triggered tooltip window
 
-    bar_chart.exit().remove();
-    pie_chart.exit().remove();
+    //bar_chart.exit().remove();
     geo_point.exit().remove();
 
 }
@@ -347,3 +204,121 @@ function updateChart(year) {
 function click() {
     var latlon = projection.invert(d3.mouse(this));
 }
+
+function pieChart() {
+    // Making pie chart
+    pieNotes = d3.nest()
+        .key(function(d) {
+            return d.Broad_Phase_of_Flight;
+        })
+        .sortKeys(d3.ascending)
+        .rollup(function(leaves) {
+            return leaves.length;
+        })
+        .entries(allData);
+
+    var pieWidth = 200,
+        pieHeight = 200,
+        pieRadius = Math.min(pieWidth, pieHeight) / 2;
+
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+    var arc = d3.arc()
+        .outerRadius(pieRadius - 10)
+        .innerRadius(0);
+
+    var labelArc = d3.arc()
+        .outerRadius(pieRadius - 40)
+        .innerRadius(pieRadius - 40);
+
+    var pie1 = d3.pie()
+        .sort(null)
+        .value(function(d) {
+            return d.value;});
+
+    var pie_chart1 = g.selectAll('.arc')
+        .data(pie1(pieNotes));
+
+    var pie_enter1 = pie_chart1.enter()
+        .append('g')
+        .attr('class', 'arc')
+        .attr('transform', function(d) {
+            return 'translate(' + 100 + ',' + 380 + ')'
+        });
+
+    //pie_chart.merge(pie_enter);
+
+    pie_enter1.append('path')
+        .attr('d', arc)
+        .style('fill', function(d) { 
+            if (d.data.key == '') {
+                return 'grey';
+            } else {
+                return color(d.data.key);
+            }
+        })
+        .append('title')
+        .text(function(d){
+        if (d.data.key == '') {
+            return 'Unknown';
+        } else {
+            console.log(d.data.key)
+            return d.data.key;
+        }
+        });
+
+    pie_enter1.append('text')
+        .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
+        .attr("dy", ".35em")
+        .style("font-size", "8px")
+        .text(function(d) { 
+            console.log(d.data.key)
+            return d.data.key; 
+        });
+    //pie_chart.exit().remove();
+}
+// //
+//     // making bar chart
+//     //
+//     var modelNodes = d3.nest()
+//     .key(function(d) {return d.values[0].Make;})
+//     .key(function(d) {return d.values[0].Model;})
+//     .rollup(function(leaves) {
+//         return leaves.length;
+//     })
+//     .entries(filteredValues);
+// console.log(modelNodes);
+// var xScale = d3.scaleBand().rangeRound([0, 100]).padding(0.8);
+// var yScale = d3.scaleLinear().range([100, 0]);
+// var xAxis = g.append('g')
+//     .attr('transform', 'translate(' + 50 + ',' + 300 + ')')
+//     .attr('class', 'x axis')
+//     .call(d3.axisBottom(xScale));
+// var yAxis = g.append('g')
+//     .attr('transform', 'translate(' + 50 + ',' + 200 + ')')
+//     .attr('class', 'y axis')
+//     .call(d3.axisLeft(yScale).ticks(10));
+
+// var bar_chart = g.selectAll('.rect')
+//     .data(modelNodes);
+
+// var bar_enter = bar_chart.enter()
+//     .append('rect')
+//     .attr('class', 'bar');
+
+// //bar_chart.merge(bar_enter);
+
+// bar_enter.attr('transform', 'translate(' + 50 + ',' + 300 + ')')
+//     .attr('x', function(d){
+//         console.log(d.values[0].key);
+//         return xScale(d.values[0].key);
+//     })
+//     .attr('y', function(d){
+//         console.log(d.values[0].value);
+//         return yScale(d.values[0].value);
+//     })
+//     .attr('width', xScale.bandwidth())
+//     .attr('height', function(d){return 100 - yScale(d.values[0].value);});
+
+// ////
+// //bar_end
